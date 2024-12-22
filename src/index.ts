@@ -8,7 +8,6 @@ const EASYEDA_VERSION = "2.2.32.3";
 const VERSION = extensionConfig.version;
 
 export const about = async (): Promise<void> => {
-    // about the extension
     const message = `${extensionConfig.displayName} v${VERSION}\n${extensionConfig.description}\nCreated by Andrew (radi8) <me@radi8.dev>`;
     eda.sys_MessageBox.showInformationMessage(message);
 };
