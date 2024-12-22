@@ -17,9 +17,6 @@
 	"keywords": [
 		"Wakatime", "Hack Club", "Hackatime", "High Seas"
 	],
-	"images": {
-		"logo": "./images/logo.png"
-	},
 	"homepage": "https://github.com/radeeyate/easyeda-wakatime",
 	"bugs": "https://github.com/radeeyate/easyeda-wakatime/issues",
 	"activationEvents": {},
