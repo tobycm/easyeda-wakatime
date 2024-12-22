@@ -7,7 +7,7 @@ This extension is a fork of [EasyEDA's SDK Example](https://github.com/easyeda/p
 ## Installation
 
 1. Download the latest release of easyeda-wakatime from the [releases](https://github.com/radeeyate/easyeda-wakatime/releases).
-2. Open EasyEDA Pro.
+2. Open EasyEDA Pro. If you haven't already, download EasyEDA Pro - don't worry, it's **free**!
 3. Go to **Settings > Extensions > Extension Manager**.
 4. Click **Import Extensions**.
 5. Select the downloaded extension.
