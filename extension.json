@@ -1,0 +1,168 @@
+{
+	"name": "easyeda-wakatime",
+	"uuid": "3cb5cfef27264bd7b66f7b4794a5bacb",
+	"displayName": "EasyEDA Wakatime",
+	"description": "Wakatime Integration for EasyEDA",
+	"version": "0.1.0",
+	"publisher": "Andrew (radi8) <me@radi8.dev>",
+	"engines": {
+		"eda": "^2.2.32"
+	},
+	"license": "MIT License",
+	"repository": {
+		"type": "extension-store",
+		"url": "https://github.com/radeeyate/easyeda-wakatime"
+	},
+	"categories": "Other",
+	"keywords": [
+		"Wakatime", "Hack Club", "Hackatime", "High Seas"
+	],
+	"images": {
+		"logo": "./images/logo.png"
+	},
+	"homepage": "https://github.com/radeeyate/easyeda-wakatime",
+	"bugs": "https://github.com/radeeyate/easyeda-wakatime/issues",
+	"activationEvents": {},
+	"entry": "./dist/index",
+	"dependentExtensions": {},
+	"headerMenus": {
+		"home": [
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Enable Extension",
+						"title": "Enable Extension",
+						"registerFn": "enable"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "About",
+						"title": "About",
+						"registerFn": "about"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "SetDetails",
+						"title": "Set Project Details",
+						"registerFn": "setProjDetails"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Settings",
+						"title": "Settings",
+						"registerFn": "setWakatimeSettings"
+					}
+				]
+			}
+		],
+		"sch": [
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Enable Extension",
+						"title": "Enable Extension",
+						"registerFn": "enable"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "About",
+						"title": "About.",
+						"registerFn": "about"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "SetDetails",
+						"title": "Set Project Details",
+						"registerFn": "setProjDetails"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Settings",
+						"title": "Settings",
+						"registerFn": "setWakatimeSettings"
+					}
+				]
+			}
+		],
+		"pcb": [
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Enable Extension",
+						"title": "Enable Extension",
+						"registerFn": "enable"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "About",
+						"title": "About",
+						"registerFn": "about"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "SetDetails",
+						"title": "Set Project Details",
+						"registerFn": "setProjDetails"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Settings",
+						"title": "Settings",
+						"registerFn": "setWakatimeSettings"
+					}
+				]
+			}
+		]
+	}
+}

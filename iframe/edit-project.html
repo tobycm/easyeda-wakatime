@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en-us">
+
+<head>
+    <title>Set Project Details</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 1em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: -0.5em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea {
+            width: calc(100% - 12px);
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: sans-serif;
+
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #5588ff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4678ee;
+        }
+
+        #output {
+            margin-top: 10px;
+            color: #749dff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body onload="loadDetails()">
+    <h2>Set Project Details</h2>
+    <label for="projectName">Project Name:</label><br>
+    <input type="text" id="projectName" name="projectName"><br><br>
+
+    <button onclick="setProjectDetails()">Save Details</button>
+
+    <p id="output"></p>
+
+    <script>
+        async function loadDetails() {
+            try {
+                if (eda) {
+                    const projectName = await eda.sys_Storage.getExtensionUserConfig("projectName");
+                    const projectNameInput = document.getElementById('projectName');
+
+                    if (projectNameInput) {
+                        if (projectName) projectNameInput.value = projectName;
+                    }
+                }
+                else {
+                    throw new Error("Can't Access EDA API from iframe");
+                }
+            } catch (e) {
+                console.error("Failed to Load Project Data", e);
+                document.getElementById("output").innerText = "Failed to Load Project Data: " + e;
+            }
+        }
+
+        async function setProjectDetails() {
+            const projectNameInput = document.getElementById('projectName');
+
+            if (projectNameInput) {
+                const projectName = projectNameInput.value;
+                try {
+                    if (eda) {
+                        await eda.sys_Storage.setExtensionUserConfig("projectName", projectName);
+                        console.log('Project details saved!');
+
+                        document.getElementById("output").innerText = "Project details saved!";
+                    }
+                    else {
+                        document.getElementById("output").innerText = "Can't Access EDA API from iframe";
+                    }
+                } catch (error) {
+                    document.getElementById("output").innerText = "Failed to Set Project Data: ", error;
+                }
+            } else {
+                document.getElementById("output").innerText = "Input elements not found";
+            }
+        }
+
+    </script>
+</body>
+
+</html>
