@@ -3,7 +3,7 @@
 	"uuid": "3cb5cfef27264bd7b66f7b4794a5bacb",
 	"displayName": "EasyEDA Wakatime",
 	"description": "Wakatime Integration for EasyEDA",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"publisher": "Andrew (radi8) <me@radi8.dev>",
 	"engines": {
 		"eda": "^2.2.32"
@@ -51,8 +51,19 @@
 				"title": "EasyEDA Wakatime",
 				"menuItems": [
 					{
+						"id": "Stats",
+						"title": "Today's Stats",
+						"registerFn": "getTodayStats"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
 						"id": "SetDetails",
-						"title": "Set Project Details",
+						"title": "Edit Project Details",
 						"registerFn": "setProjDetails"
 					}
 				]
@@ -97,8 +108,19 @@
 				"title": "EasyEDA Wakatime",
 				"menuItems": [
 					{
+						"id": "Stats",
+						"title": "Today's Stats",
+						"registerFn": "getTodayStats"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
 						"id": "SetDetails",
-						"title": "Set Project Details",
+						"title": "Edit Project Details",
 						"registerFn": "setProjDetails"
 					}
 				]
@@ -143,8 +165,19 @@
 				"title": "EasyEDA Wakatime",
 				"menuItems": [
 					{
+						"id": "Stats",
+						"title": "Today's Stats",
+						"registerFn": "getTodayStats"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
 						"id": "SetDetails",
-						"title": "Set Project Details",
+						"title": "Edit Project Details",
 						"registerFn": "setProjDetails"
 					}
 				]

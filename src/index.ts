@@ -1,15 +1,40 @@
 import * as extensionConfig from '../extension.json';
 
 export const activate = (): void => {
-    eda.sys_ToastMessage.showMessage("EasyEDA Wakatime active!", ESYS_ToastMessageType.INFO, 10);
+    initializeWakatime(); // i am not exactly sure why this never runs
 };
 
-const EASYEDA_VERSION = "2.2.32.3";
+const EASYEDA_VERSION = "2.2.34.6";
 const VERSION = extensionConfig.version;
+const TITLE = "EasyEDA Wakatime"
+let lastPcbEventTimeKey = "lastPcbEventTime";
+
+let apiURL: string | undefined;
+let apiKey: string | undefined;
+
+const checkApiCredentials = async (): Promise<boolean> => {
+    apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
+    apiKey = await eda.sys_Storage.getExtensionUserConfig("apiKey");
+
+    if (!apiURL || !apiKey) {
+        eda.sys_MessageBox.showInformationMessage(
+            "Please set your Wakatime API URL and API Key in the settings. You can do this by clicking EasyEDA Wakatime > Settings. If you do that, the action you can retry the action you just performed.", TITLE
+        );
+        return false;
+    }
+    return true;
+};
+
+const initializeWakatime = async (): Promise<void> => {
+    if (await checkApiCredentials()) {
+        console.log("Wakatime initialized.");
+        checkLastPcbEvent();
+    }
+}
 
 export const about = async (): Promise<void> => {
     const message = `${extensionConfig.displayName} v${VERSION}\n${extensionConfig.description}\nCreated by Andrew (radi8) <me@radi8.dev>`;
-    eda.sys_MessageBox.showInformationMessage(message);
+    eda.sys_MessageBox.showInformationMessage(message, TITLE);
 };
 
 export const setProjDetails = async (): Promise<void> => {
@@ -20,15 +45,55 @@ export const setWakatimeSettings = async (): Promise<void> => {
     await eda.sys_IFrame.openIFrame("iframe/edit-settings.html", 500, 500);
 };
 
+export const getTodayStats = async (): Promise<void> => {
+    if (!await checkApiCredentials()) return;
+
+    try {
+        const stats = await eda.sys_ClientUrl.request(
+            `${apiURL}/users/current/statusbar/today`,
+            "GET",
+            undefined,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br, zstd',
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    Connection: 'keep-alive',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Sec-GPC': '1',
+                    Priority: 'u=0'
+                }
+            }
+        )
+
+        if (stats.ok) {
+            const data = await stats.json();
+            const categoryStrings = data.data.categories.map((category: { text: string; name: string; }) => `${category.text} (${category.name})`);
+            const joinedStats = `Today's stats: ${categoryStrings.join(", ")}`;
+            eda.sys_MessageBox.showInformationMessage(joinedStats, TITLE);
+        } else {
+            console.error("Error fetching today's stats:", stats.status, await stats.text());
+            eda.sys_MessageBox.showInformationMessage(`Error fetching stats: ${stats.status}`, TITLE);
+        }
+    } catch (error) {
+        console.error("Error fetching today's stats:", error);
+        eda.sys_MessageBox.showInformationMessage("Failed to fetch today's stats.", TITLE);
+    }
+}
+
 export const enable = async (): Promise<void> => {
     const apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
     const apiKey = await eda.sys_Storage.getExtensionUserConfig("apiKey");
 
     if (apiURL === undefined || apiKey === undefined) {
-        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API URL and API Key in the settings. You can do this by clicking EasyEDA Wakatime > Settings. After you do that, please enable EasyEDA Wakatime again.");
+        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API URL and API Key in the settings. You can do this by clicking EasyEDA Wakatime > Settings. After you do that, please enable EasyEDA Wakatime again.", TITLE);
         return;
     }
-    
+
     if (apiKey !== undefined && apiURL !== undefined) {
         console.log("Wakatime enabled!");
     }
@@ -36,18 +101,18 @@ export const enable = async (): Promise<void> => {
     await checkLastPcbEvent();
 };
 
-const assembleBody = (projectInfo: IDMT_ProjectItem | { friendlyName: string }) => {
+const assembleBody = (projectInfo: { friendlyName: string, editorType: "Schematic" | "PCB" | "Project" | null }) => {
     const projectInfoString = JSON.stringify(projectInfo);
     console.log(projectInfoString);
 
     const body = [
         {
-            //"branch": "master", // version control is coming to easyeda in 2025. we can change this then if it works on a branch system.
+            // "branch": "master", // version control is coming to easyeda in 2025 (supposedly). we can change this then if it works on a branch system. source: https://oshwlab.com/forum/post/d38b7dd3329e4d23859b6fdfb9a3a97b
             "category": "design",
-            "entity": "./" + projectInfo["friendlyName"],
+            "entity": "./" + projectInfo.friendlyName,
             "type": "file",
-            "language": "EasyEDA Project", // in the future, we need to change this so it can be detected what is currently being worked on. as now, there is a bug in easyeda preventing us from doing this.
-            "project": projectInfo["friendlyName"],
+            "language": `EasyEDA ${projectInfo.editorType}`,
+            "project": projectInfo.friendlyName,
             "time": Date.now() / 1000, // to adjust to how wakatime does it
             "user_agent": `easyeda/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`
         }
@@ -55,49 +120,73 @@ const assembleBody = (projectInfo: IDMT_ProjectItem | { friendlyName: string }) 
     return body;
 };
 
-const getProjectInfo = async (): Promise<{ friendlyName: string } | null | IDMT_ProjectItem> => {
-    if (eda && eda.dmt_Project && typeof eda.dmt_Project.getCurrentProjectInfo === 'function') {
-        try {
-            const projectInfo = await eda.dmt_Project.getCurrentProjectInfo();
-            if (projectInfo) {
-                return projectInfo;
-            } else {
-                //eda.sys_MessageBox.showInformationMessage("No project info available. This is likely due to a bug in version of EasyEDA Pro <2.2.34.6. Unfortunately, to continue tracking your statistics you will need to restart your editor. Sorry!");
-                const storedName = await eda.sys_Storage.getExtensionUserConfig("projectName");
-                if (storedName === undefined) {
-                    eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Set Project Details.");
-                    return null;
-                }
+const getProjectInfo = async (): Promise<{ friendlyName: string; editorType: "Schematic" | "PCB" | "Project" | null; entity: string } | null> => {
+    let name = "";
+    let editorType: "Schematic" | "PCB" | "Project" | null = null;
+    let entity = "";
 
-                return { "friendlyName": storedName };
+    try {
+        const projectInfo = await eda.dmt_Project.getCurrentProjectInfo();
+        if (projectInfo) {
+            name = projectInfo.friendlyName;
+
+            // at this point we can assume that the user is * probably * running a compatible version of easyeda to do the checks, but we still keep the error checks just in case
+            const schematicInfo = await eda.dmt_Schematic.getCurrentSchematicInfo();
+            if (schematicInfo !== undefined) {
+                editorType = "Schematic";
+                entity = schematicInfo.name;
+            } else {
+                const pcbInfo = await eda.dmt_Pcb.getCurrentPcbInfo();
+                if (pcbInfo !== undefined) {
+                    editorType = "PCB";
+                    entity = pcbInfo.name;
+                } else {
+                    editorType = "Project";
+                    entity = projectInfo.friendlyName;
+                }
             }
-        } catch (error) {
-            // eda.sys_MessageBox.showInformationMessage("Error getting project info: " + String(error) + "\nThis is likely due to a bug in version of EasyEDA Pro <2.2.34.6. Unfortunately, to continue tracking your statistics you will need to restart your editor.");
+        } else {
             const storedName = await eda.sys_Storage.getExtensionUserConfig("projectName");
             if (storedName === undefined) {
-                eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Set Project Details.");
+                eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
                 return null;
             }
 
-            return { "friendlyName": storedName };
+            name = storedName;
+            entity = storedName;
+            editorType = "Project";
         }
-    } else {
-        console.error("eda or eda.dmt_Project or getCurrentProjectInfo is not available.");
-        eda?.sys_MessageBox?.showInformationMessage("Could not access project information.");
-        return null;
+    } catch (error) {
+        const storedName = await eda.sys_Storage.getExtensionUserConfig("projectName");
+        if (storedName === undefined) {
+            eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
+            return null;
+        }
+
+        return { friendlyName: storedName, editorType: "Project", entity: storedName };
     }
+
+    return { friendlyName: name, editorType: editorType, entity: entity }
 };
 
-let lastPcbEventTime: number | null = null;
 
-eda.pcb_Event.addMouseEventListener("mouseEvent", "all", () => {
-    lastPcbEventTime = Date.now();
-    console.log("PCB event occured");
+eda.pcb_Event.addMouseEventListener("mouseEvent", "all", async () => { // whilst it's called pcb_event, it detects schematic events as well.
+    const now = Date.now();
+    await eda.sys_Storage.setExtensionUserConfig(lastPcbEventTimeKey, now.toString());
+    console.log("Project event occured");
 });
 
 const checkLastPcbEvent = async () => {
     while (true) {
-        await new Promise(resolve => setTimeout(resolve, 15000)); // Check every 10 seconds
+        await new Promise(resolve => setTimeout(resolve, 15000)); // check every 15 seconds
+
+        const lastEventTimeString = await eda.sys_Storage.getExtensionUserConfig(lastPcbEventTimeKey);
+        let lastPcbEventTime = 0;
+        if (lastEventTimeString !== undefined) {
+            lastPcbEventTime = parseInt(lastEventTimeString, 10);
+        }
+
+        console.log(lastPcbEventTime, Date.now(), Date.now() - lastPcbEventTime)
 
         if (lastPcbEventTime) {
             const now = Date.now();
@@ -113,12 +202,12 @@ const checkLastPcbEvent = async () => {
 
                     const apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
                     if (apiURL === undefined) {
-                        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API URL in the settings. You can do this by clicking EasyEDA Wakatime > Settings.");
+                        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API URL in the settings. You can do this by clicking EasyEDA Wakatime > Settings.", TITLE);
                     }
 
                     const apiKey = await eda.sys_Storage.getExtensionUserConfig("apiKey");
                     if (apiKey === undefined) {
-                        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API key in the settings. You can do this by clicking EasyEDA Wakatime > Settings.");
+                        eda.sys_MessageBox.showInformationMessage("Please set your Wakatime API key in the settings. You can do this by clicking EasyEDA Wakatime > Settings.", TITLE);
                     }
 
                     if (apiKey !== undefined && apiURL !== undefined) {
