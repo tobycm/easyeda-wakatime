@@ -12,15 +12,6 @@ const INACTIVITY_TIMEOUT = 30000;
 const LAST_PCB_EVENT_TIME_KEY = "lastPcbEventTime";
 const COMMON_HEADERS = {
     'Accept': 'application/json',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Content-Type': 'application/json',
-    'Connection': 'keep-alive',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    'Sec-GPC': '1',
-    'Priority': 'u=0'
 };
 
 let apiURL: string | undefined;
@@ -56,7 +47,7 @@ export const setProjDetails = async (): Promise<void> => {
 };
 
 export const setWakatimeSettings = async (): Promise<void> => {
-    await eda.sys_IFrame.openIFrame("iframe/edit-settings.html", 500, 500);
+    await eda.sys_IFrame.openIFrame("iframe/edit-settings.html", 500, 400);
 };
 
 export const getTodayStats = async (): Promise<void> => {

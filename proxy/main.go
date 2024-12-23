@@ -9,6 +9,7 @@ import (
 
 	resty "github.com/go-resty/resty/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 
 	"encoding/base64"
@@ -19,6 +20,12 @@ import (
 func main() {
 	app := fiber.New()
 	client := resty.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://pro.easyeda.com",
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
+	}))
 
 	err := godotenv.Load()
 

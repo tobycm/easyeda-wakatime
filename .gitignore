@@ -11,3 +11,4 @@ locales/zh-Hans.json
 proxy/proxy
 proxy/wakatime-proxy
 .env
+proxy/tmp
