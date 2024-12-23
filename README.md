@@ -16,6 +16,8 @@ This extension is a fork of [EasyEDA's SDK Example](https://github.com/easyeda/p
 8. Enable the plugin (**EasyEDA Wakatime > Enable Extension**). **This must be done every time you load up EasyEDA.**
 9. Start designing!
 
+If you still need help installing the extension, you can follow along with [this YouTube video](https://youtu.be/reHCB_J-Snk).
+
 ## Usage
 
 Once installed, the **EasyEDA Wakatime** menu provides the following options:
@@ -27,8 +29,10 @@ Once installed, the **EasyEDA Wakatime** menu provides the following options:
 
 ## Known Issues
 
+> Update: I recieved access to the updated version and have mitigated *both* of these issues! Project detection and editor type detection have been fixed, though you may have to wait until the version is publicly released.
+
 * **Project Detection Issues on Older EasyEDA Versions:** On EasyEDA Pro versions [prior to 2.2.34.6](https://github.com/easyeda/pro-api-sdk/issues/11#issuecomment-2556131855), the extension might not automatically detect the current project name. Use **EasyEDA Wakatime > Set Project Details** to manually specify the project name. Restarting EasyEDA might also help temporarily.
-* **Language Detection:** Currently, the extension reports the language as "EasyEDA Project" regardless of whether you are working on a schematic or PCB. This is also related to the bug specified above. Once the new EasyEDA version it has been released, we will support this detection.
+* **Editor Type Detection:** Currently, the extension reports the language as "EasyEDA Project" regardless of whether you are working on a schematic or PCB. This is also related to the bug specified above. Once the new EasyEDA version it has been released, we will support this detection.
 
 ## Issues
 

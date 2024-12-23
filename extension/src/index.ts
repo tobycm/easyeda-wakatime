@@ -7,7 +7,21 @@ export const activate = (): void => {
 const EASYEDA_VERSION = "2.2.34.6";
 const VERSION = extensionConfig.version;
 const TITLE = "EasyEDA Wakatime"
-let lastPcbEventTimeKey = "lastPcbEventTime";
+const HEARTBEAT_INTERVAL = 15000;
+const INACTIVITY_TIMEOUT = 30000;
+const LAST_PCB_EVENT_TIME_KEY = "lastPcbEventTime";
+const COMMON_HEADERS = {
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Content-Type': 'application/json',
+    'Connection': 'keep-alive',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-GPC': '1',
+    'Priority': 'u=0'
+};
 
 let apiURL: string | undefined;
 let apiKey: string | undefined;
@@ -55,17 +69,8 @@ export const getTodayStats = async (): Promise<void> => {
             undefined,
             {
                 headers: {
-                    Accept: 'application/json',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'Accept-Encoding': 'gzip, deflate, br, zstd',
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    Connection: 'keep-alive',
-                    'Sec-Fetch-Dest': 'empty',
-                    'Sec-Fetch-Mode': 'cors',
-                    'Sec-Fetch-Site': 'same-origin',
-                    'Sec-GPC': '1',
-                    Priority: 'u=0'
+                    ...COMMON_HEADERS,
+                    Authorization: `Basic ${apiKey}`,
                 }
             }
         )
@@ -172,15 +177,15 @@ const getProjectInfo = async (): Promise<{ friendlyName: string; editorType: "Sc
 
 eda.pcb_Event.addMouseEventListener("mouseEvent", "all", async () => { // whilst it's called pcb_event, it detects schematic events as well.
     const now = Date.now();
-    await eda.sys_Storage.setExtensionUserConfig(lastPcbEventTimeKey, now.toString());
+    await eda.sys_Storage.setExtensionUserConfig(LAST_PCB_EVENT_TIME_KEY, now.toString());
     console.log("Project event occured");
 });
 
 const checkLastPcbEvent = async () => {
     while (true) {
-        await new Promise(resolve => setTimeout(resolve, 15000)); // check every 15 seconds
+        await new Promise(resolve => setTimeout(resolve, HEARTBEAT_INTERVAL)); // check every 15 seconds
 
-        const lastEventTimeString = await eda.sys_Storage.getExtensionUserConfig(lastPcbEventTimeKey);
+        const lastEventTimeString = await eda.sys_Storage.getExtensionUserConfig(LAST_PCB_EVENT_TIME_KEY);
         let lastPcbEventTime = 0;
         if (lastEventTimeString !== undefined) {
             lastPcbEventTime = parseInt(lastEventTimeString, 10);
@@ -192,8 +197,8 @@ const checkLastPcbEvent = async () => {
             const now = Date.now();
             const timeDiff = now - lastPcbEventTime;
 
-            if (timeDiff <= 30000) {
-                console.log("A PCB event occurred within the last 30 seconds.");
+            if (timeDiff <= INACTIVITY_TIMEOUT) {
+                console.log("A project event occurred within the last 30 seconds.");
 
                 const projectInfo = await getProjectInfo();
                 if (projectInfo) {
@@ -218,17 +223,8 @@ const checkLastPcbEvent = async () => {
                                 JSON.stringify(body),
                                 {
                                     headers: {
-                                        Accept: 'application/json',
-                                        'Accept-Language': 'en-US,en;q=0.5',
-                                        'Accept-Encoding': 'gzip, deflate, br, zstd',
-                                        Authorization: `Bearer ${apiKey}`,
-                                        'Content-Type': 'application/json',
-                                        Connection: 'keep-alive',
-                                        'Sec-Fetch-Dest': 'empty',
-                                        'Sec-Fetch-Mode': 'cors',
-                                        'Sec-Fetch-Site': 'same-origin',
-                                        'Sec-GPC': '1',
-                                        Priority: 'u=0'
+                                        ...COMMON_HEADERS,
+                                        Authorization: `Basic ${apiKey}`,
                                     }
                                 }
                             );
@@ -246,12 +242,11 @@ const checkLastPcbEvent = async () => {
                 } else {
                     console.log("Could not get project info, skipping heartbeat.");
                 }
-
             } else {
-                console.log("No PCB event occurred in the last 30 seconds");
+                console.log("No project events have occurred in the last 30 seconds");
             }
         } else {
-            console.log("No PCB event has occurred yet");
+            console.log("No project events have occurred yet");
         }
     }
 };
