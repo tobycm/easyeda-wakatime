@@ -72,7 +72,7 @@
     </style>
 </head>
 
-<body onload="loadDetails()">
+<body>
     <h2>Edit Project Details</h2>
     <label for="projectName">Project Name:</label><br>
     <input type="text" id="projectName" name="projectName"><br><br>
@@ -82,25 +82,6 @@
     <p id="output"></p>
 
     <script>
-        async function loadDetails() {
-            try {
-                if (eda) {
-                    const projectName = await eda.sys_Storage.getExtensionUserConfig("projectName");
-                    const projectNameInput = document.getElementById('projectName');
-
-                    if (projectNameInput) {
-                        if (projectName) projectNameInput.value = projectName;
-                    }
-                }
-                else {
-                    throw new Error("Can't Access EDA API from iframe");
-                }
-            } catch (e) {
-                console.error("Failed to Load Project Data", e);
-                document.getElementById("output").innerText = "Failed to Load Project Data: " + e;
-            }
-        }
-
         async function setProjectDetails() {
             const projectNameInput = document.getElementById('projectName');
 

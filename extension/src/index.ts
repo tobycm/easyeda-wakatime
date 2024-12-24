@@ -1,7 +1,10 @@
+const semiver = require("semiver");
+const ini = require("ini")
 import * as extensionConfig from '../extension.json';
 
 export const activate = (): void => {
-    initializeWakatime(); // i am not exactly sure why this never runs
+    eda.sys_Log.add(`[${TITLE}] Activated`, ESYS_LogType.INFO);
+    initializeWakatime();
 };
 
 const EASYEDA_VERSION = "2.2.34.6";
@@ -30,16 +33,41 @@ const checkApiCredentials = async (): Promise<boolean> => {
     return true;
 };
 
-const initializeWakatime = async (): Promise<void> => {
-    if (await checkApiCredentials()) {
-        console.log("Wakatime initialized.");
-        checkLastPcbEvent();
+export const checkForUpdate = async (showUpToDatePopup: boolean = true): Promise<void> => {
+    eda.sys_Log.add(`[${TITLE}] Checking for updates...`, ESYS_LogType.INFO);
+
+    try {
+        const repoTags = await eda.sys_ClientUrl.request("https://api.github.com/repos/radeeyate/easyeda-wakatime/tags");
+        if (repoTags.ok) {
+            const tags = await repoTags.json();
+            const latestTag = tags[0]?.name;
+            if (latestTag && semiver.semiver(latestTag.replace("v", ""), VERSION.replace("v", "")) === 1) { // checking if latest tag is newer than VERSION
+                eda.sys_MessageBox.showConfirmationMessage(
+                    `A new version of EasyEDA Wakatime is available (${latestTag}). Click okay to open the newest release and update to the latest version for the best experience.`,
+                    TITLE,
+                    "Okay",
+                    undefined,
+                    async (mainButtonClicked: boolean): Promise<void> => {
+                        if (mainButtonClicked) {
+                            eda.sys_Window.open(extensionConfig.repository.url);
+                        }
+                    }
+                );
+            } else {
+                eda.sys_Log.add(`[${TITLE}] Up to date`, ESYS_LogType.INFO);
+                eda.sys_MessageBox.showInformationMessage(`EasyEDA Wakatime is up to date.`, TITLE)
+            }
+        }
+    } catch (error) {
+        eda.sys_Log.add(`[${TITLE}] Error checking for updates: ${error}`, ESYS_LogType.ERROR);
+        if (showUpToDatePopup) {
+            eda.sys_MessageBox.showInformationMessage("Failed to check for updates.", TITLE);
+        }
     }
 }
 
 export const about = async (): Promise<void> => {
-    const message = `${extensionConfig.displayName} v${VERSION}\n${extensionConfig.description}\nCreated by Andrew (radi8) <me@radi8.dev>`;
-    eda.sys_MessageBox.showInformationMessage(message, TITLE);
+    await eda.sys_IFrame.openIFrame("iframe/about.html", 500, 400)
 };
 
 export const setProjDetails = async (): Promise<void> => {
@@ -61,7 +89,7 @@ export const getTodayStats = async (): Promise<void> => {
             {
                 headers: {
                     ...COMMON_HEADERS,
-                    Authorization: `Basic ${apiKey}`,
+                    Authorization: `Bearer ${apiKey}`,
                 }
             }
         )
@@ -81,7 +109,7 @@ export const getTodayStats = async (): Promise<void> => {
     }
 }
 
-export const enable = async (): Promise<void> => {
+export const initializeWakatime = async (): Promise<void> => {
     const apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
     const apiKey = await eda.sys_Storage.getExtensionUserConfig("apiKey");
 
@@ -90,10 +118,7 @@ export const enable = async (): Promise<void> => {
         return;
     }
 
-    if (apiKey !== undefined && apiURL !== undefined) {
-        console.log("Wakatime enabled!");
-    }
-
+    await checkForUpdate(false);
     await checkLastPcbEvent();
 };
 
@@ -110,7 +135,7 @@ const assembleBody = (projectInfo: { friendlyName: string, editorType: "Schemati
             "language": `EasyEDA ${projectInfo.editorType}`,
             "project": projectInfo.friendlyName,
             "time": Date.now() / 1000, // to adjust to how wakatime does it
-            "user_agent": `easyeda/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`
+            "user_agent": `easyedapro/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`
         }
     ];
     return body;
@@ -174,7 +199,7 @@ eda.pcb_Event.addMouseEventListener("mouseEvent", "all", async () => { // whilst
 
 const checkLastPcbEvent = async () => {
     while (true) {
-        await new Promise(resolve => setTimeout(resolve, HEARTBEAT_INTERVAL)); // check every 15 seconds
+        await new Promise(resolve => setTimeout(resolve, HEARTBEAT_INTERVAL));
 
         const lastEventTimeString = await eda.sys_Storage.getExtensionUserConfig(LAST_PCB_EVENT_TIME_KEY);
         let lastPcbEventTime = 0;
@@ -215,7 +240,7 @@ const checkLastPcbEvent = async () => {
                                 {
                                     headers: {
                                         ...COMMON_HEADERS,
-                                        Authorization: `Basic ${apiKey}`,
+                                        Authorization: `Bearer ${apiKey}`,
                                     }
                                 }
                             );
@@ -223,15 +248,16 @@ const checkLastPcbEvent = async () => {
                             if (response.ok) {
                                 const data = await response.json();
                                 console.log("Heartbeat sent successfully:", data);
+                                await eda.sys_Log.add(`[${TITLE}] Heartbeat sent successfully`, ESYS_LogType.INFO);
                             } else {
-                                console.error("Error sending heartbeat:", response.status, await response.text());
+                                await eda.sys_Log.add(`[${TITLE}] Error sending heartbeat: ${response.status} ${await response.text()}`, ESYS_LogType.ERROR);
                             }
                         } catch (err) {
-                            console.error("Error sending heartbeat:", err);
+                            await eda.sys_Log.add(`[${TITLE}] Error sending heartbeat: ${err}`, ESYS_LogType.ERROR);
                         }
                     }
                 } else {
-                    console.log("Could not get project info, skipping heartbeat.");
+                    await eda.sys_Log.add(`[${TITLE}] Could not get project info`, ESYS_LogType.WARNING);
                 }
             } else {
                 console.log("No project events have occurred in the last 30 seconds");
@@ -241,3 +267,5 @@ const checkLastPcbEvent = async () => {
         }
     }
 };
+
+activate();
