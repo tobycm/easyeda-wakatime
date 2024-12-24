@@ -1,5 +1,4 @@
 const semiver = require("semiver");
-const ini = require("ini")
 import * as extensionConfig from '../extension.json';
 
 export const activate = (): void => {
