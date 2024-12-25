@@ -54,14 +54,13 @@ export const checkForUpdate = async (showUpToDatePopup: boolean = true): Promise
                 );
             } else {
                 eda.sys_Log.add(`[${TITLE}] Up to date`, ESYS_LogType.INFO);
-                eda.sys_MessageBox.showInformationMessage(`EasyEDA Wakatime is up to date.`, TITLE)
+                if (showUpToDatePopup) {
+                    eda.sys_MessageBox.showInformationMessage(`EasyEDA Wakatime is up to date.`, TITLE);
+                }
             }
         }
     } catch (error) {
         eda.sys_Log.add(`[${TITLE}] Error checking for updates: ${error}`, ESYS_LogType.ERROR);
-        if (showUpToDatePopup) {
-            eda.sys_MessageBox.showInformationMessage("Failed to check for updates.", TITLE);
-        }
     }
 }
 

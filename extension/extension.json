@@ -15,11 +15,16 @@
 	},
 	"categories": "Other",
 	"keywords": [
-		"Wakatime", "Hack Club", "Hackatime", "High Seas"
+		"Wakatime",
+		"Hack Club",
+		"Hackatime",
+		"High Seas"
 	],
 	"homepage": "https://github.com/radeeyate/easyeda-wakatime",
 	"bugs": "https://github.com/radeeyate/easyeda-wakatime/issues",
-	"activationEvents": {"Activate": "activate"},
+	"activationEvents": {
+		"Activate": "activate"
+	},
 	"entry": "./dist/index",
 	"dependentExtensions": {},
 	"headerMenus": {
@@ -32,6 +37,17 @@
 						"id": "Enable Extension",
 						"title": "Enable Extension",
 						"registerFn": "initializeWakatime"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Toggle Heartbeats",
+						"title": "Toggle Heartbeats",
+						"registerFn": "toggleHeartbeats"
 					}
 				]
 			},
@@ -108,6 +124,17 @@
 				"title": "EasyEDA Wakatime",
 				"menuItems": [
 					{
+						"id": "Toggle Heartbeats",
+						"title": "Toggle Heartbeats",
+						"registerFn": "toggleHeartbeats"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
 						"id": "About",
 						"title": "About.",
 						"registerFn": "about"
@@ -168,6 +195,17 @@
 						"id": "Enable Extension",
 						"title": "Enable Extension",
 						"registerFn": "initializeWakatime"
+					}
+				]
+			},
+			{
+				"id": "EasyEDA Wakatime",
+				"title": "EasyEDA Wakatime",
+				"menuItems": [
+					{
+						"id": "Toggle Heartbeats",
+						"title": "Toggle Heartbeats",
+						"registerFn": "toggleHeartbeats"
 					}
 				]
 			},
