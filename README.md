@@ -24,7 +24,9 @@ Once installed, the **EasyEDA Wakatime** menu provides the following options:
 
 * **Enable Extension:** Toggles WakaTime tracking.
 * **About:** Displays extension information.
-* **Set Project Details:** Manually set the current project name (for older EasyEDA versions).
+* **Today's Stats:** Displays your WakaTime stats for today.
+* **Edit Project Details:** Manually set the current project name (for older EasyEDA versions).
+* **Check For Updates:** Checks for updates to the extension.
 * **Settings:** Configure your WakaTime API URL and API Key.
 
 ## Known Issues

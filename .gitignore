@@ -12,3 +12,4 @@ proxy/proxy
 proxy/wakatime-proxy
 .env
 proxy/tmp
+proxy/.air.toml

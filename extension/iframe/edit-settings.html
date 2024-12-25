@@ -102,6 +102,13 @@
 
                 try {
                     if (eda) {
+                        document.getElementById("output").innerText = "Checking credentials...";
+
+                        if (await checkAuth(apiURL, apiKey) !== true) {
+                            document.getElementById("output").innerText = "Invalid credentials";
+                            return;
+                        }
+
                         await eda.sys_Storage.setExtensionUserConfig("apiURL", apiURL);
                         await eda.sys_Storage.setExtensionUserConfig("apiKey", apiKey);
                         // await eda.sys_Storage.setExtensionUserConfig("proxyURL", proxyURL);
@@ -119,6 +126,26 @@
             } else {
                 document.getElementById("output").innerText = "Input elements not found";
             }
+        }
+
+        const checkAuth = async (apiURL, apiKey) => {
+            const req = await eda.sys_ClientUrl.request(
+                `${apiURL}/users/current/statusbar/today`,
+                "GET",
+                undefined,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                        Authorization: `Bearer ${apiKey}`,
+                    }
+                }
+            );
+
+            if (req.status === 401) {
+                return false;
+            }
+
+            return true;
         }
 
     </script>
