@@ -1,4 +1,4 @@
-const semiver = require("semiver");
+import semiver from "semiver";
 import * as extensionConfig from '../extension.json';
 
 export const activate = (): void => {
@@ -40,7 +40,7 @@ export const checkForUpdate = async (showUpToDatePopup: boolean = true): Promise
         if (repoTags.ok) {
             const tags = await repoTags.json();
             const latestTag = tags[0]?.name;
-            if (latestTag && semiver.semiver(latestTag.replace("v", ""), VERSION.replace("v", "")) === 1) { // checking if latest tag is newer than VERSION
+            if (latestTag && semiver(latestTag.replace("v", ""), VERSION.replace("v", "")) === 1) { // checking if latest tag is newer than VERSION
                 eda.sys_MessageBox.showConfirmationMessage(
                     `A new version of EasyEDA Wakatime is available (${latestTag}). Click okay to open the newest release and update to the latest version for the best experience.`,
                     TITLE,

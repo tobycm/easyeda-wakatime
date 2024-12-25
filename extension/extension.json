@@ -31,7 +31,7 @@
 					{
 						"id": "Enable Extension",
 						"title": "Enable Extension",
-						"registerFn": "enable"
+						"registerFn": "initializeWakatime"
 					}
 				]
 			},
@@ -99,7 +99,7 @@
 					{
 						"id": "Enable Extension",
 						"title": "Enable Extension",
-						"registerFn": "enable"
+						"registerFn": "initializeWakatime"
 					}
 				]
 			},
@@ -167,7 +167,7 @@
 					{
 						"id": "Enable Extension",
 						"title": "Enable Extension",
-						"registerFn": "enable"
+						"registerFn": "initializeWakatime"
 					}
 				]
 			},
