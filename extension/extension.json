@@ -3,7 +3,7 @@
 	"uuid": "3cb5cfef27264bd7b66f7b4794a5bacb",
 	"displayName": "EasyEDA Wakatime",
 	"description": "Wakatime Integration for EasyEDA",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"publisher": "Andrew (radi8) <me@radi8.dev>",
 	"engines": {
 		"eda": "^2.2.32"
