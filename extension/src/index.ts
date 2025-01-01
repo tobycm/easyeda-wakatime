@@ -127,7 +127,7 @@ const assembleBody = (projectInfo: { friendlyName: string, editorType: "Schemati
     const body = [
         {
             // "branch": "master", // version control is coming to easyeda in 2025 (supposedly). we can change this then if it works on a branch system. source: https://oshwlab.com/forum/post/d38b7dd3329e4d23859b6fdfb9a3a97b
-            "category": "design",
+            "category": "designing",
             "entity": "./" + projectInfo.friendlyName,
             "type": "file",
             "language": `EasyEDA ${projectInfo.editorType}`,
