@@ -9,7 +9,7 @@ export const activate = (): void => {
 const EASYEDA_VERSION = "2.2.34.6";
 const VERSION = extensionConfig.version;
 const TITLE = "EasyEDA Wakatime"
-const HEARTBEAT_INTERVAL = 15000;
+const HEARTBEAT_INTERVAL = 25000;
 const INACTIVITY_TIMEOUT = 30000;
 const LAST_PCB_EVENT_TIME_KEY = "lastPcbEventTime";
 const COMMON_HEADERS = {
