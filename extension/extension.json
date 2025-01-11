@@ -3,10 +3,10 @@
 	"uuid": "3cb5cfef27264bd7b66f7b4794a5bacb",
 	"displayName": "EasyEDA Wakatime",
 	"description": "Wakatime Integration for EasyEDA",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"publisher": "Andrew (radi8) <me@radi8.dev>",
 	"engines": {
-		"eda": "^2.2.32"
+		"eda": "^2.2.34.8"
 	},
 	"license": "MIT License",
 	"repository": {

@@ -12,12 +12,27 @@ const TITLE = "EasyEDA Wakatime"
 const HEARTBEAT_INTERVAL = 25000;
 const INACTIVITY_TIMEOUT = 30000;
 const LAST_PCB_EVENT_TIME_KEY = "lastPcbEventTime";
+const PREVIOUS_SCHEMATIC_ELEMENT_COUNT_KEY = "previousSchematicElementCount";
+const PREVIOUS_PCB_ELEMENT_COUNT_KEY = "previousPcbElementCount";
 const COMMON_HEADERS = {
     'Accept': 'application/json',
 };
 
 let apiURL: string | undefined;
 let apiKey: string | undefined;
+
+interface Heartbeat {
+    category: string;
+    entity: string;
+    type: string;
+    language: string;
+    project: string;
+    time: number;
+    user_agent: string;
+    lines?: number;
+    line_additions?: number;
+    line_deletions?: number;
+}
 
 const checkApiCredentials = async (): Promise<boolean> => {
     apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
@@ -116,27 +131,114 @@ export const initializeWakatime = async (): Promise<void> => {
         return;
     }
 
+    await eda.sys_Storage.setExtensionUserConfig(PREVIOUS_PCB_ELEMENT_COUNT_KEY, "load");
+    await eda.sys_Storage.setExtensionUserConfig(PREVIOUS_SCHEMATIC_ELEMENT_COUNT_KEY, "load");
+
     await checkForUpdate(false);
     await checkLastPcbEvent();
 };
 
-const assembleBody = (projectInfo: { friendlyName: string, editorType: "Schematic" | "PCB" | "Project" | null }) => {
+const assembleBody = async (projectInfo: { friendlyName: string, editorType: "Schematic" | "PCB" | "Project" | null }): Promise<Heartbeat[]> => {
     const projectInfoString = JSON.stringify(projectInfo);
     console.log(projectInfoString);
 
-    const body = [
-        {
-            // "branch": "master", // version control is coming to easyeda in 2025 (supposedly). we can change this then if it works on a branch system. source: https://oshwlab.com/forum/post/d38b7dd3329e4d23859b6fdfb9a3a97b
-            "category": "designing",
-            "entity": "./" + projectInfo.friendlyName,
-            "type": "file",
-            "language": `EasyEDA ${projectInfo.editorType}`,
-            "project": projectInfo.friendlyName,
-            "time": Date.now() / 1000, // to adjust to how wakatime does it
-            "user_agent": `easyedapro/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`
+    const heartbeat: Heartbeat = {
+        category: "coding",
+        type: "file",
+        project: projectInfo.friendlyName,
+        time: Date.now() / 1000,
+        user_agent: `easyedapro/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`,
+        entity: "",
+        language: ""
+    };
+
+    console.log(heartbeat)
+
+    if (projectInfo.editorType === "Schematic" || projectInfo.editorType === "PCB" || projectInfo.editorType === "Project") {
+        const currentElementCount = await getElementCount(projectInfo.editorType);
+        console.log(currentElementCount)
+        let previousElementCount = 0;
+        let previousCountKey = "";
+
+        if (projectInfo.editorType === "Schematic") {
+            previousCountKey = PREVIOUS_SCHEMATIC_ELEMENT_COUNT_KEY;
+        } else {
+            previousCountKey = PREVIOUS_PCB_ELEMENT_COUNT_KEY;
         }
-    ];
-    return body;
+
+        const previousCountString = await eda.sys_Storage.getExtensionUserConfig(previousCountKey);
+
+        if (previousCountString === "load") {
+            previousElementCount = currentElementCount.count;
+        } else {
+            previousElementCount = parseInt(previousCountString, 10);
+        }
+
+        heartbeat.lines = currentElementCount.count;
+        heartbeat.line_additions = Math.max(0, currentElementCount.count - previousElementCount);
+        heartbeat.line_deletions = Math.max(0, previousElementCount - currentElementCount.count);
+        heartbeat.language = `EasyEDA ${currentElementCount.predictedType}`;
+        heartbeat.entity = `./${projectInfo.friendlyName} (${currentElementCount.predictedType})`,
+
+        await eda.sys_Storage.setExtensionUserConfig(previousCountKey, currentElementCount.count.toString());
+    }
+
+    console.log([heartbeat])
+
+    return [heartbeat];
+};
+
+const getElementCount = async (editorType: "Schematic" | "PCB" | "Project" | null): Promise<{ count: number, predictedType: string }> => {
+    if (editorType === "Schematic") {
+        try {
+            return {
+                count: (await eda.sch_PrimitiveComponent.getAll()).length +
+                    (await eda.sch_PrimitiveWire.getAll()).length +
+                    (await eda.sch_PrimitiveText.getAll()).length +
+                    (await eda.sch_PrimitiveBus.getAll()).length +
+                    (await eda.sch_PrimitivePin.getAll()).length, predictedType: "Schematic"
+            };
+        } catch (error) {
+            console.warn("Error getting schematic element count:", error);
+            return { count: 0, predictedType: "Schematic" };
+        }
+    } else if (editorType === "PCB") {
+        try {
+            return {
+                count: (await eda.pcb_PrimitiveComponent.getAll()).length +
+                    (await eda.pcb_PrimitiveLine.getAll()).length +
+                    (await eda.pcb_PrimitiveArc.getAll()).length +
+                    (await eda.pcb_PrimitiveVia.getAll()).length +
+                    (await eda.pcb_PrimitivePad.getAll()).length, predictedType: "PCB"
+            };
+        } catch (error) {
+            console.warn("Error getting PCB element count:", error);
+            return { count: 0, predictedType: "PCB" };
+        }
+    } else if (editorType === null || editorType == "Project") {
+        try {
+            return {
+                count: (await eda.sch_PrimitiveComponent.getAll()).length +
+                    (await eda.sch_PrimitiveWire.getAll()).length +
+                    (await eda.sch_PrimitiveText.getAll()).length +
+                    (await eda.sch_PrimitiveBus.getAll()).length +
+                    (await eda.sch_PrimitivePin.getAll()).length, predictedType: "Schematic"
+            };
+        } catch (schematicError) {
+            console.debug("Schematic element count failed, trying PCB:", schematicError);
+            try {
+                return {count: (await eda.pcb_PrimitiveComponent.getAll()).length +
+                    (await eda.pcb_PrimitiveLine.getAll()).length +
+                    (await eda.pcb_PrimitiveArc.getAll()).length +
+                    (await eda.pcb_PrimitiveVia.getAll()).length +
+                    (await eda.pcb_PrimitivePad.getAll()).length, predictedType: "PCB"};
+            } catch (pcbError) {
+                console.warn("Both schematic and PCB element count failed:", pcbError);
+                return { count: 0, predictedType: "Project" };
+            }
+        }
+    }
+    return { count: 0, predictedType: "Project" };
 };
 
 const getProjectInfo = async (): Promise<{ friendlyName: string; editorType: "Schematic" | "PCB" | "Project" | null; entity: string } | null> => {
@@ -167,7 +269,7 @@ const getProjectInfo = async (): Promise<{ friendlyName: string; editorType: "Sc
         } else {
             const storedName = await eda.sys_Storage.getExtensionUserConfig("projectName");
             if (storedName === undefined) {
-                eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
+                eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
                 return null;
             }
 
@@ -178,7 +280,7 @@ const getProjectInfo = async (): Promise<{ friendlyName: string; editorType: "Sc
     } catch (error) {
         const storedName = await eda.sys_Storage.getExtensionUserConfig("projectName");
         if (storedName === undefined) {
-            eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA Pro <=2.2.34.6, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
+            eda.sys_MessageBox.showInformationMessage("Due to a bug in EasyEDA, we're unable to identify your current project. To temporarily resolve this, you can manually set your project name by clicking EasyEDA Wakatime > Edit Project Details.", TITLE);
             return null;
         }
 
@@ -216,7 +318,7 @@ const checkLastPcbEvent = async () => {
 
                 const projectInfo = await getProjectInfo();
                 if (projectInfo) {
-                    const body = assembleBody(projectInfo);
+                    const body = await assembleBody(projectInfo);
                     console.log("Sending heartbeat:", JSON.stringify(body));
 
                     const apiURL = await eda.sys_Storage.getExtensionUserConfig("apiURL");
