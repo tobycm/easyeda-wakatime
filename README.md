@@ -31,10 +31,7 @@ Once installed, the **EasyEDA Wakatime** menu provides the following options:
 
 ## Known Issues
 
-> Update: I recieved access to the updated version and have mitigated *both* of these issues! Project detection and editor type detection have been fixed, though you may have to wait until the version is publicly released.
-
-* **Project Detection Issues on Older EasyEDA Versions:** On EasyEDA Pro versions [prior to 2.2.34.6](https://github.com/easyeda/pro-api-sdk/issues/11#issuecomment-2556131855), the extension might not automatically detect the current project name. Use **EasyEDA Wakatime > Set Project Details** to manually specify the project name. Restarting EasyEDA might also help temporarily.
-* **Editor Type Detection:** Currently, the extension reports the language as "EasyEDA Project" regardless of whether you are working on a schematic or PCB. This is also related to the bug specified above. Once the new EasyEDA version it has been released, we will support this detection.
+* **Project Name Detection Issues on Specific EasyEDA Versions:** On certain EasyEDA Pro versions, the extension might not automatically detect the current project name. Use **EasyEDA Wakatime > Set Project Details** to manually specify the project name.
 
 ## Issues
 
