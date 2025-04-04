@@ -29,6 +29,8 @@ interface Heartbeat {
     project: string;
     time: number;
     user_agent: string;
+    editor: string;
+    operating_system: string;
     lines?: number;
     line_additions?: number;
     line_deletions?: number;
@@ -109,8 +111,13 @@ export const getTodayStats = async (): Promise<void> => {
 
         if (stats.ok) {
             const data = await stats.json();
-            const categoryStrings = data.data.categories.map((category: { text: string; name: string; }) => `${category.text} (${category.name})`);
-            const joinedStats = `Today's stats: ${categoryStrings.join(", ")}`;
+            let joinedStats: string;
+            if (data.data.categories) {
+                const categoryStrings = data.data.categories.map((category: { text: string; name: string; }) => `${category.text} (${category.name})`);
+                joinedStats = `Today's stats: ${categoryStrings.join(", ")}`;
+            } else {
+                joinedStats = `Today's stats: ${data.data.grand_total.text}`;
+            }
             eda.sys_MessageBox.showInformationMessage(joinedStats, TITLE);
         } else {
             console.error("Error fetching today's stats:", stats.status, await stats.text());
@@ -147,9 +154,11 @@ const assembleBody = async (projectInfo: { friendlyName: string, editorType: "Sc
         type: "file",
         project: projectInfo.friendlyName,
         time: Date.now() / 1000,
-        user_agent: `easyedapro/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`,
+        user_agent: `wakatime/${VERSION} (web) web EasyEDAPro/${EASYEDA_VERSION} easyeda-wakatime/${VERSION}`,
         entity: "",
-        language: ""
+        language: `EasyEDA ${projectInfo.editorType}`,
+        editor: "EasyEDAPro",
+        operating_system: "web",
     };
 
     console.log(heartbeat)
@@ -180,7 +189,7 @@ const assembleBody = async (projectInfo: { friendlyName: string, editorType: "Sc
         heartbeat.language = `EasyEDA ${currentElementCount.predictedType}`;
         heartbeat.entity = `./${projectInfo.friendlyName} (${currentElementCount.predictedType})`,
 
-        await eda.sys_Storage.setExtensionUserConfig(previousCountKey, currentElementCount.count.toString());
+            await eda.sys_Storage.setExtensionUserConfig(previousCountKey, currentElementCount.count.toString());
     }
 
     console.log([heartbeat])
@@ -227,11 +236,13 @@ const getElementCount = async (editorType: "Schematic" | "PCB" | "Project" | nul
         } catch (schematicError) {
             console.debug("Schematic element count failed, trying PCB:", schematicError);
             try {
-                return {count: (await eda.pcb_PrimitiveComponent.getAll()).length +
-                    (await eda.pcb_PrimitiveLine.getAll()).length +
-                    (await eda.pcb_PrimitiveArc.getAll()).length +
-                    (await eda.pcb_PrimitiveVia.getAll()).length +
-                    (await eda.pcb_PrimitivePad.getAll()).length, predictedType: "PCB"};
+                return {
+                    count: (await eda.pcb_PrimitiveComponent.getAll()).length +
+                        (await eda.pcb_PrimitiveLine.getAll()).length +
+                        (await eda.pcb_PrimitiveArc.getAll()).length +
+                        (await eda.pcb_PrimitiveVia.getAll()).length +
+                        (await eda.pcb_PrimitivePad.getAll()).length, predictedType: "PCB"
+                };
             } catch (pcbError) {
                 console.warn("Both schematic and PCB element count failed:", pcbError);
                 return { count: 0, predictedType: "Project" };
@@ -334,7 +345,7 @@ const checkLastPcbEvent = async () => {
                     if (apiKey !== undefined && apiURL !== undefined) {
                         try {
                             const response = await eda.sys_ClientUrl.request(
-                                `${apiURL}/heartbeats`,
+                                `${apiURL}/users/current/heartbeats`,
                                 'POST',
                                 JSON.stringify(body),
                                 {
