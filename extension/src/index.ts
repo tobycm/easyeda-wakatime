@@ -16,6 +16,7 @@ const PREVIOUS_SCHEMATIC_ELEMENT_COUNT_KEY = "previousSchematicElementCount";
 const PREVIOUS_PCB_ELEMENT_COUNT_KEY = "previousPcbElementCount";
 const COMMON_HEADERS = {
     'Accept': 'application/json',
+    'Content-Type': 'application/json',
 };
 
 let apiURL: string | undefined;
