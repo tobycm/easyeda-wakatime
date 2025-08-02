@@ -3,15 +3,15 @@
 	"uuid": "3cb5cfef27264bd7b66f7b4794a5bacb",
 	"displayName": "EasyEDA Wakatime",
 	"description": "Wakatime Integration for EasyEDA",
-	"version": "0.1.7",
-	"publisher": "Andrew (radi8) <me@radi8.dev>",
+	"version": "0.2.0",
+	"publisher": "Toby Cm (tobycm) <toby@vsus.app>",
 	"engines": {
 		"eda": "^2.2.34.8"
 	},
 	"license": "MIT License",
 	"repository": {
 		"type": "github",
-		"url": "https://github.com/radeeyate/easyeda-wakatime"
+		"url": "https://github.com/tobycm/easyeda-wakatime"
 	},
 	"categories": "Other",
 	"keywords": [
@@ -20,8 +20,8 @@
 		"Hackatime",
 		"High Seas"
 	],
-	"homepage": "https://github.com/radeeyate/easyeda-wakatime",
-	"bugs": "https://github.com/radeeyate/easyeda-wakatime/issues",
+	"homepage": "https://github.com/tobycm/easyeda-wakatime",
+	"bugs": "https://github.com/tobycm/easyeda-wakatime/issues",
 	"activationEvents": {
 		"Activate": "activate"
 	},

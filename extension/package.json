@@ -6,12 +6,12 @@
 	"license": "Apache-2.0",
 	"homepage": "https://pro.lceda.cn/",
 	"scripts": {
-		"compile": "rimraf ./dist/ && ts-node ./config/esbuild.prod.ts",
+		"compile": "rm -rf ./dist/ && ts-node ./config/esbuild.prod.ts",
 		"prepare": "husky",
 		"prettier:all": "prettier --write .",
 		"eslint:all": "eslint --ext .ts --fix .",
 		"fix": "npm run prettier:all && npm run eslint:all",
-		"build": "npm run compile && ts-node ./build/packaged.ts"
+		"build": "ts-node ./build/packaged.ts"
 	},
 	"devDependencies": {
 		"@jlceda/pro-api-types": "^0.1.105",
@@ -30,7 +30,6 @@
 		"jszip": "^3.10.1",
 		"lint-staged": "^15.2.10",
 		"prettier": "^3.3.3",
-		"rimraf": "^6.0.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.6.2"
 	},
